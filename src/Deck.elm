@@ -1,48 +1,64 @@
-module Deck exposing (deck, fullDeck, main)
+module Deck exposing (..)
 
 import Html exposing (..)
+import Random exposing (..)
+import Random.List exposing (shuffle)
 import Tuple exposing (..)
 
 
 main =
     ul []
-        (List.map (\card -> li [] [ text (second card ++ " of " ++ first card ++ "s") ]) fullDeck)
+        (List.map (\card -> li [] [ text <| Debug.toString card ]) fullDeck)
 
 
-deck : List String
-deck =
-    [ "Ace", "King", "Queen", "Jack", "Ten", "Nine", "Eight", "Seven", "Six", "Five", "Four", "Three", "Two" ]
+suitEnum : List Suit
+suitEnum =
+    [ Club, Diamond, Heart, Spade ]
 
 
-type alias Rank =
-    String
+type Suit
+    = Club
+    | Diamond
+    | Heart
+    | Spade
 
 
-type alias Suit =
-    String
+rankEnum : List Rank
+rankEnum =
+    [ Ace, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King ]
+
+
+type Rank
+    = Ace
+    | Two
+    | Three
+    | Four
+    | Five
+    | Six
+    | Seven
+    | Eight
+    | Nine
+    | Ten
+    | Jack
+    | Queen
+    | King
 
 
 type alias Card =
-    ( Suit, Rank )
+    { suit : Suit, rank : Rank }
 
 
 type alias Deck =
     List Card
 
 
-suits : List Suit
-suits =
-    [ "Spade", "Heart", "Diamond", "Club" ]
-
-
-ranks : List Rank
-ranks =
-    [ "Ace", "King", "Queen", "Jack", "Ten", "Nine", "Eight", "Seven", "Six", "Five", "Four", "Three", "Two" ]
+newDeck =
+    [ { suit = Diamond, rank = Two }, { suit = Heart, rank = Ace } ]
 
 
 mapAllRanksToSuit : Suit -> List Rank -> List Card
 mapAllRanksToSuit suit ranks_ =
-    List.map (\rank -> ( suit, rank )) ranks_
+    List.map (\rank -> { suit = suit, rank = rank }) ranks_
 
 
 buildFullDeck : List Suit -> List Rank -> List Card
@@ -50,6 +66,5 @@ buildFullDeck suits_ ranks_ =
     List.concatMap (\suit -> mapAllRanksToSuit suit ranks_) suits_
 
 
-fullDeck : Deck
 fullDeck =
-    buildFullDeck suits ranks
+    buildFullDeck suitEnum rankEnum
