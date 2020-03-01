@@ -4,8 +4,9 @@ import Browser
 import Deck exposing (..)
 import Html exposing (..)
 import Html.Events exposing (onClick)
-import List exposing (drop, tail, take)
-import Tuple exposing (..)
+import List exposing (drop, take)
+import Random
+import Random.List exposing (shuffle)
 
 
 
@@ -13,11 +14,13 @@ import Tuple exposing (..)
 -- MAIN
 
 
+main : Program () Model Msg
 main =
-    Browser.sandbox
-        { init = model
+    Browser.element
+        { init = \_ -> ( model, Cmd.none )
         , update = update
         , view = view
+        , subscriptions = \_ -> Sub.none
         }
 
 
@@ -25,7 +28,7 @@ main =
 -- MODEL
 
 
-type alias Game =
+type alias Model =
     { deck : Deck
     , hand : List Card
     , communityCards : List Card
@@ -33,7 +36,7 @@ type alias Game =
     }
 
 
-model : Game
+model : Model
 model =
     { deck = fullDeck
     , hand = []
@@ -51,9 +54,11 @@ type Msg
     | Flop
     | Turn
     | River
+    | Shuffle
+    | ReceiveShuffled Deck
 
 
-deal : Game -> Game
+deal : Model -> Model
 deal game =
     { deck = drop 2 game.deck
     , hand = take 2 game.deck
@@ -62,7 +67,7 @@ deal game =
     }
 
 
-dealOut : Int -> Game -> Game
+dealOut : Int -> Model -> Model
 dealOut num game =
     { game
         | deck = drop (num + 1) game.deck
@@ -71,20 +76,26 @@ dealOut num game =
     }
 
 
-update : Msg -> Game -> Game
-update msg game =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model_ =
     case msg of
+        Shuffle ->
+            ( model_, Random.generate ReceiveShuffled (shuffle model_.deck) )
+
+        ReceiveShuffled shuffledDeck ->
+            ( { model_ | deck = shuffledDeck }, Cmd.none )
+
         Deal ->
-            deal game
+            ( deal model_, Cmd.none )
 
         Flop ->
-            dealOut 3 game
+            ( dealOut 3 model_, Cmd.none )
 
         Turn ->
-            dealOut 1 game
+            ( dealOut 1 model_, Cmd.none )
 
         River ->
-            dealOut 1 game
+            ( dealOut 1 model_, Cmd.none )
 
 
 
@@ -98,7 +109,7 @@ renderCard card =
 
 renderEmojiFromCard : Card -> String
 renderEmojiFromCard card =
-    case .suit card of
+    case card.suit of
         Spade ->
             "♠️"
 
@@ -155,10 +166,11 @@ renderRankFromCard card =
             "A"
 
 
-view : Game -> Html Msg
+view : Model -> Html Msg
 view game =
     div []
-        [ button [ onClick Deal ] [ text "Deal" ]
+        [ button [ onClick Shuffle ] [ text "Shuffle" ]
+        , button [ onClick Deal ] [ text "Deal" ]
         , button [ onClick Flop ] [ text "Flop" ]
         , button [ onClick Turn ] [ text "Turn" ]
         , button [ onClick River ] [ text "River" ]

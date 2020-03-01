@@ -1,9 +1,6 @@
 module Deck exposing (..)
 
 import Html exposing (..)
-import Random exposing (..)
-import Random.List exposing (shuffle)
-import Tuple exposing (..)
 
 
 main =
@@ -45,15 +42,13 @@ type Rank
 
 
 type alias Card =
-    { suit : Suit, rank : Rank }
+    { suit : Suit
+    , rank : Rank
+    }
 
 
 type alias Deck =
     List Card
-
-
-newDeck =
-    [ { suit = Diamond, rank = Two }, { suit = Heart, rank = Ace } ]
 
 
 mapAllRanksToSuit : Suit -> List Rank -> List Card
@@ -66,5 +61,6 @@ buildFullDeck suits_ ranks_ =
     List.concatMap (\suit -> mapAllRanksToSuit suit ranks_) suits_
 
 
+fullDeck : Deck
 fullDeck =
     buildFullDeck suitEnum rankEnum
