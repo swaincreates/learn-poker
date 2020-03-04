@@ -1,9 +1,12 @@
 module Main exposing (main)
 
 import Browser
+import Char exposing (fromCode)
 import Deck exposing (..)
 import Html exposing (..)
+import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
+import Json.Decode.Broken exposing (hexChar)
 import List exposing (drop, take)
 import Random
 import Random.List exposing (shuffle)
@@ -17,11 +20,16 @@ import Random.List exposing (shuffle)
 main : Program () Model Msg
 main =
     Browser.element
-        { init = \_ -> ( model, Cmd.none )
-        , update = update
+        { init = \_ -> ( initialModel, shuffleDeck initialModel.deck )
         , view = view
+        , update = update
         , subscriptions = \_ -> Sub.none
         }
+
+
+shuffleDeck : Deck -> Cmd Msg
+shuffleDeck deck =
+    Random.generate ReceiveShuffled (shuffle deck)
 
 
 
@@ -36,8 +44,8 @@ type alias Model =
     }
 
 
-model : Model
-model =
+initialModel : Model
+initialModel =
     { deck = fullDeck
     , hand = []
     , communityCards = []
@@ -80,7 +88,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model_ =
     case msg of
         Shuffle ->
-            ( model_, Random.generate ReceiveShuffled (shuffle model_.deck) )
+            ( model_, shuffleDeck model_.deck )
 
         ReceiveShuffled shuffledDeck ->
             ( { model_ | deck = shuffledDeck }, Cmd.none )
@@ -104,28 +112,54 @@ update msg model_ =
 
 renderCard : Card -> Html msg
 renderCard card =
-    text ("[" ++ renderRankFromCard card ++ renderEmojiFromCard card ++ "]")
+    let
+        baseAttrs =
+            [ style "font-size" "100px" ]
+
+        redTextColor =
+            [ style "color" "#d12d36" ]
+
+        attrs =
+            case card.suit of
+                Heart ->
+                    baseAttrs ++ redTextColor
+
+                Diamond ->
+                    baseAttrs ++ redTextColor
+
+                _ ->
+                    baseAttrs
+    in
+    div attrs [ text <| renderUnicode card ]
 
 
-renderEmojiFromCard : Card -> String
-renderEmojiFromCard card =
+renderFaceDownCard : Html msg
+renderFaceDownCard =
+    div [ style "font-size" "100px" ] [ text <| String.fromChar '🂠' ]
+
+
+strFromSuit : Card -> String
+strFromSuit card =
     case card.suit of
         Spade ->
-            "♠️"
-
-        Club ->
-            "♣️️"
-
-        Diamond ->
-            "♦️"
+            "A"
 
         Heart ->
-            "♥️"
+            "B"
+
+        Diamond ->
+            "C"
+
+        Club ->
+            "D"
 
 
-renderRankFromCard : Card -> String
-renderRankFromCard card =
-    case .rank card of
+strFromRank : Card -> String
+strFromRank card =
+    case card.rank of
+        Ace ->
+            "1"
+
         Two ->
             "2"
 
@@ -151,19 +185,21 @@ renderRankFromCard card =
             "9"
 
         Ten ->
-            "10"
+            "A"
 
         Jack ->
-            "J"
+            "B"
 
         Queen ->
-            "Q"
+            "D"
 
         King ->
-            "K"
+            "E"
 
-        Ace ->
-            "A"
+
+renderUnicode : Card -> String
+renderUnicode card =
+    String.fromChar <| hexChar <| "1F0" ++ strFromSuit card ++ strFromRank card
 
 
 view : Model -> Html Msg
@@ -175,15 +211,13 @@ view game =
         , button [ onClick Turn ] [ text "Turn" ]
         , button [ onClick River ] [ text "River" ]
         , h2 [] [ text "Hand" ]
-        , ul []
-            (List.map (\card -> li [] [ renderCard card ]) game.hand)
+        , div [ style "display" "flex" ] (List.map (\card -> renderCard card) game.hand)
         , h2 [] [ text "Community Cards" ]
-        , ul []
-            (List.map (\card -> li [] [ renderCard card ]) game.communityCards)
+        , div [ style "display" "flex" ] (List.map (\card -> renderCard card) game.communityCards)
         , h2 [] [ text "Burn Cards" ]
-        , ul []
-            (List.map (\card -> li [] [ renderCard card ]) game.burnCards)
-        , h2 [] [ text "Deck" ]
-        , ul []
-            (List.map (\card -> li [] [ renderCard card ]) game.deck)
+        , div [ style "display" "flex" ] (List.map (\card -> renderFaceDownCard) game.burnCards)
+
+        -- , h2 [] [ text "Deck" ]
+        -- , ul []
+        --     (List.map (\card -> li [] [ renderCard card ]) game.deck)
         ]
