@@ -3,11 +3,6 @@ module Deck exposing (..)
 import Html exposing (..)
 
 
-main =
-    ul []
-        (List.map (\card -> li [] [ text <| Debug.toString card ]) fullDeck)
-
-
 suitEnum : List Suit
 suitEnum =
     [ Club, Diamond, Heart, Spade ]
@@ -41,10 +36,8 @@ type Rank
     | King
 
 
-type alias Card =
-    { suit : Suit
-    , rank : Rank
-    }
+type Card
+    = Card Rank Suit
 
 
 type alias Deck =
@@ -53,7 +46,7 @@ type alias Deck =
 
 mapAllRanksToSuit : Suit -> List Rank -> List Card
 mapAllRanksToSuit suit ranks_ =
-    List.map (\rank -> { suit = suit, rank = rank }) ranks_
+    List.map (\rank -> Card rank suit) ranks_
 
 
 buildFullDeck : List Suit -> List Rank -> List Card

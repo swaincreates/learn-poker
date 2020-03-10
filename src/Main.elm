@@ -120,11 +120,11 @@ renderCard card =
             [ style "color" "#d12d36" ]
 
         attrs =
-            case card.suit of
-                Heart ->
+            case card of
+                Card _ Heart ->
                     baseAttrs ++ redTextColor
 
-                Diamond ->
+                Card _ Diamond ->
                     baseAttrs ++ redTextColor
 
                 _ ->
@@ -140,60 +140,60 @@ renderFaceDownCard =
 
 strFromSuit : Card -> String
 strFromSuit card =
-    case card.suit of
-        Spade ->
+    case card of
+        Card _ Spade ->
             "A"
 
-        Heart ->
+        Card _ Heart ->
             "B"
 
-        Diamond ->
+        Card _ Diamond ->
             "C"
 
-        Club ->
+        Card _ Club ->
             "D"
 
 
 strFromRank : Card -> String
 strFromRank card =
-    case card.rank of
-        Ace ->
+    case card of
+        Card Ace _ ->
             "1"
 
-        Two ->
+        Card Two _ ->
             "2"
 
-        Three ->
+        Card Three _ ->
             "3"
 
-        Four ->
+        Card Four _ ->
             "4"
 
-        Five ->
+        Card Five _ ->
             "5"
 
-        Six ->
+        Card Six _ ->
             "6"
 
-        Seven ->
+        Card Seven _ ->
             "7"
 
-        Eight ->
+        Card Eight _ ->
             "8"
 
-        Nine ->
+        Card Nine _ ->
             "9"
 
-        Ten ->
+        Card Ten _ ->
             "A"
 
-        Jack ->
+        Card Jack _ ->
             "B"
 
-        Queen ->
+        Card Queen _ ->
             "D"
 
-        King ->
+        Card King _ ->
             "E"
 
 
